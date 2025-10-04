@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Life Architect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              'brand-bg': '#0D1117',
+              'brand-surface': '#161B22',
+              'brand-border': 'rgba(255, 255, 255, 0.2)',
+              'brand-primary': '#58A6FF',
+              'brand-secondary': '#E6EDF3',
+              'brand-muted': '#8B949E',
+              'brand-glow': 'rgba(88, 166, 255, 0.5)',
+            },
+            keyframes: {
+              fadeIn: {
+                'from': { opacity: 0, transform: 'translateY(10px)' },
+                'to': { opacity: 1, transform: 'translateY(0)' },
+              },
+              'animated-gradient': {
+                '0%': { backgroundPosition: '0% 50%' },
+                '50%': { backgroundPosition: '100% 50%' },
+                '100%': { backgroundPosition: '0% 50%' },
+              },
+              'button-glow': {
+                '0%, 100%': { boxShadow: '0 0 5px #58A6FF, 0 0 10px #58A6FF' },
+                '50%': { boxShadow: '0 0 20px #58A6FF, 0 0 30px #58A6FF' },
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'gradient': 'animated-gradient 15s ease infinite',
+              'button-glow': 'button-glow 2s infinite alternate',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background: linear-gradient(-45deg, #0d1117, #1c2a3e, #0d1117, #2c1d3e);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+      }
+      .glass-effect {
+        background: rgba(22, 27, 34, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+       .input-glass {
+        background: rgba(13, 17, 23, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .input-glass:focus {
+         border: 1px solid #58A6FF;
+         box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+      }
+      @media print {
+        body {
+          background: white !important;
+          color: black !important;
+          animation: none;
+        }
+        body * {
+          visibility: hidden;
+        }
+        
+        .printing-main #printable-area, 
+        .printing-main #printable-area * {
+            visibility: visible;
+        }
+
+        .printing-scenario #printable-scenario, 
+        .printing-scenario #printable-scenario * {
+            visibility: visible;
+        }
+        
+        #printable-area, #printable-scenario {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          padding: 2rem;
+          color: black !important;
+        }
+
+        .print-no-break {
+           break-inside: avoid;
+        }
+        .print-hide {
+          display: none !important;
+        }
+        .print-text-black {
+            color: black !important;
+        }
+        .print-bg-white {
+            background-color: white !important;
+        }
+        .print-border-gray {
+            border-color: #E5E7EB !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-brand-bg text-brand-secondary">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
