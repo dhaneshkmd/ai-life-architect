@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { UserProfile, Pathway, NumerologyReport } from '../types';
 import PathwayDisplay from './PathwayDisplay';
 import ScenarioSimulator from './ScenarioSimulator';
@@ -71,19 +71,41 @@ const UserProfileSnapshot: React.FC<{ userProfile: UserProfile }> = ({ userProfi
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyReport }) => {
+  const printRef = useRef<HTMLDivElement>(null);
+
   const handlePrint = () => {
     document.body.classList.add('printing-main');
     document.body.classList.remove('printing-scenario');
-    // ensure class is applied before print UI opens
     setTimeout(() => {
       window.print();
       document.body.classList.remove('printing-main');
     }, 0);
   };
 
+  // Download the whole plan as PDF using current print layout (no sideways scroll)
+  const handleExportPdf = async () => {
+    if (!printRef.current) return;
+    const html2pdf = (await import('html2pdf.js')).default as any;
+
+    document.body.classList.add('printing-main'); // reuse your print CSS
+    const filename = `AI-Life-Architect_${userProfile.name.replace(/\s+/g, '_')}_plan.pdf`;
+
+    const options = {
+      margin: [10, 10, 10, 10],                  // mm
+      filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: -window.scrollY },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }, // respects .print-no-break
+    };
+
+    await html2pdf().set(options).from(printRef.current).save();
+    document.body.classList.remove('printing-main');
+  };
+
   return (
     <div className="space-y-12 animate-fade-in print:space-y-10 print:max-w-none">
-      <div id="printable-area">
+      <div id="printable-area" ref={printRef}>
         {/* Snapshot (avoid splitting) */}
         <UserProfileSnapshot userProfile={userProfile} />
 
@@ -92,9 +114,32 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
           <NumerologyReportDisplay userProfile={userProfile} report={numerologyReport} />
         </div>
 
-        {/* Start the pathway on a fresh page for print */}
+        {/* Start the pathway on a fresh page for print/PDF */}
         <div style={{ breakBefore: 'page' }}>
-          <PathwayDisplay pathway={pathway} onPrint={handlePrint} />
+          <PathwayDisplay
+            pathway={pathway}
+            onPrint={handlePrint}
+            // If your PathwayDisplay supports it, show a "Download PDF" button there:
+            // onExportPdf={handleExportPdf}
+          />
+        </div>
+      </div>
+
+      {/* Global Download button (always visible) */}
+      <div className="print-hide">
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={handlePrint}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-brand-border text-sm font-medium rounded-md shadow-sm text-brand-secondary bg-brand-surface/50 hover:bg-brand-surface transition-colors"
+          >
+            🖨 Print
+          </button>
+          <button
+            onClick={handleExportPdf}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-brand-border text-sm font-medium rounded-md shadow-sm text-brand-secondary bg-brand-surface/50 hover:bg-brand-surface transition-colors"
+          >
+            ⤓ Download PDF
+          </button>
         </div>
       </div>
 
