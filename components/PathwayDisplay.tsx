@@ -9,10 +9,9 @@ import { PrintIcon } from './icons/PrintIcon';
 interface PathwayDisplayProps {
   pathway: Pathway;
   onPrint: () => void;
-  onExportPdf?: () => void; // NEW: optional download handler
+  onExportPdf?: () => void; // optional download handler
 }
 
-// lightweight inline download icon (so we don't rely on another file)
 const DownloadIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
   <svg
     className={className}
@@ -30,39 +29,50 @@ const DownloadIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' 
   </svg>
 );
 
-const EpochCard: React.FC<{ epoch: Epoch }> = ({ epoch }) => (
+/** Single epoch card — accepts an accent class for the left border color */
+const EpochCard: React.FC<{ epoch: Epoch; accentClass: string }> = ({ epoch, accentClass }) => (
   <div
-    className="
-      glass-effect rounded-lg p-6 w-full
-      print-bg-white print-border-gray print-no-break
-      print:w-full print:min-w-0 print:max-w-none
-    "
+    className={[
+      // screen look
+      'glass-effect rounded-xl p-6 w-full',
+      // report/print look
+      'report-card', accentClass,
+      // print fallbacks
+      'print-bg-white print-border-gray print-no-break print:w-full print:min-w-0 print:max-w-none',
+    ].join(' ')}
   >
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-xl font-bold text-brand-primary print-text-black">{epoch.theme}</h3>
-      <span className="text-sm font-mono bg-brand-bg/50 text-brand-muted px-2 py-1 rounded print-text-black print-bg-white print-border-gray">
+    <div className="flex justify-between items-start mb-4">
+      <h3 className="text-xl font-extrabold text-slate-100 report-mode:text-slate-900 print-text-black">
+        {epoch.theme}
+      </h3>
+      <span
+        className="text-xs font-mono px-2 py-1 rounded badge-year print-text-black"
+        aria-label={`Year ${epoch.years}`}
+        title={epoch.years}
+      >
         {epoch.years}
       </span>
     </div>
 
     <div className="space-y-4">
       <div>
-        <h4 className="font-semibold text-brand-secondary flex items-center gap-2 mb-2 print-text-black">
-          <MilestoneIcon className="h-5 w-5" />
+        <h4 className="font-semibold text-slate-100 report-mode:text-slate-900 flex items-center gap-2 mb-2 print-text-black">
+          <MilestoneIcon className="h-5 w-5 text-indigo-400 report-mode:text-indigo-500" />
           Milestones
         </h4>
-        <ul className="list-disc list-inside text-brand-muted space-y-1 print-text-black">
+        <ul className="list-disc list-inside text-slate-300 report-mode:text-slate-700 space-y-1 print-text-black">
           {epoch.milestones.map((m, i) => (
             <li key={i}>{m}</li>
           ))}
         </ul>
       </div>
+
       <div>
-        <h4 className="font-semibold text-brand-secondary flex items-center gap-2 mb-2 print-text-black">
-          <HabitIcon className="h-5 w-5" />
+        <h4 className="font-semibold text-slate-100 report-mode:text-slate-900 flex items-center gap-2 mb-2 print-text-black">
+          <HabitIcon className="h-5 w-5 text-emerald-400 report-mode:text-emerald-600" />
           Habits
         </h4>
-        <ul className="list-disc list-inside text-brand-muted space-y-1 print-text-black">
+        <ul className="list-disc list-inside text-slate-300 report-mode:text-slate-700 space-y-1 print-text-black">
           {epoch.habits.map((h, i) => (
             <li key={i}>{h}</li>
           ))}
@@ -73,15 +83,29 @@ const EpochCard: React.FC<{ epoch: Epoch }> = ({ epoch }) => (
 );
 
 const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint, onExportPdf }) => {
+  // rotating accent colors for left border (prints beautifully)
+  const accents = [
+    'border-l-indigo-400',
+    'border-l-cyan-400',
+    'border-l-fuchsia-400',
+    'border-l-amber-400',
+    'border-l-emerald-400',
+    'border-l-sky-400',
+    'border-l-violet-400',
+    'border-l-rose-400',
+    'border-l-lime-400',
+    'border-l-teal-400',
+  ];
+
   return (
     <div className="space-y-8 print:max-w-none">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-3xl font-bold text-brand-secondary mb-2 print-text-black">
+          <h2 className="text-3xl font-extrabold mb-2 report-title-gradient print:text-slate-900">
             Your {pathway.horizon_years}-Year Pathway
           </h2>
-          <p className="text-brand-muted max-w-2xl print-text-black">
-            This is your AI-generated strategic blueprint. Remember, it's a living document, meant to adapt as you grow.
+          <p className="text-slate-300 report-mode:text-slate-600 max-w-2xl print-text-black">
+            This is your AI-generated strategic blueprint. Remember, it’s a living document—refine it as you grow.
           </p>
         </div>
 
@@ -107,31 +131,33 @@ const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint, onExp
         </div>
       </div>
 
-      {/* Cards wrap downward (no horizontal scroll) */}
+      {/* Epoch cards — flow downward, no horizontal scroll. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 print:grid-cols-1 print:gap-4">
         {pathway.epochs.map((epoch, index) => (
-          <EpochCard key={index} epoch={epoch} />
+          <EpochCard key={index} epoch={epoch} accentClass={accents[index % accents.length]} />
         ))}
       </div>
 
+      {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-1">
-        <div className="glass-effect rounded-lg p-6 print-bg-white print-border-gray print-no-break">
-          <h3 className="text-lg font-bold text-brand-secondary mb-3 flex items-center gap-2 print-text-black">
-            <RiskIcon className="h-5 w-5 text-red-400" />
+        <div className="glass-effect report-card border-l-rose-400 rounded-xl p-6 print-bg-white print-border-gray print-no-break">
+          <h3 className="text-lg font-bold text-slate-100 report-mode:text-slate-900 mb-3 flex items-center gap-2 print-text-black">
+            <RiskIcon className="h-5 w-5 text-rose-400 report-mode:text-rose-600" />
             Potential Risks
           </h3>
-          <ul className="list-disc list-inside text-brand-muted space-y-1 print-text-black">
+          <ul className="list-disc list-inside text-slate-300 report-mode:text-slate-700 space-y-1 print-text-black">
             {pathway.risks.map((risk, i) => (
               <li key={i}>{risk}</li>
             ))}
           </ul>
         </div>
-        <div className="glass-effect rounded-lg p-6 print-bg-white print-border-gray print-no-break">
-          <h3 className="text-lg font-bold text-brand-secondary mb-3 flex items-center gap-2 print-text-black">
-            <IndicatorIcon className="h-5 w-5 text-green-400" />
+
+        <div className="glass-effect report-card border-l-emerald-400 rounded-xl p-6 print-bg-white print-border-gray print-no-break">
+          <h3 className="text-lg font-bold text-slate-100 report-mode:text-slate-900 mb-3 flex items-center gap-2 print-text-black">
+            <IndicatorIcon className="h-5 w-5 text-emerald-400 report-mode:text-emerald-600" />
             Leading Indicators
           </h3>
-          <ul className="list-disc list-inside text-brand-muted space-y-1 print-text-black">
+          <ul className="list-disc list-inside text-slate-300 report-mode:text-slate-700 space-y-1 print-text-black">
             {pathway.leading_indicators.map((indicator, i) => (
               <li key={i}>{indicator}</li>
             ))}
