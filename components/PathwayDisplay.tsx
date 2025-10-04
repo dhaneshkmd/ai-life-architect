@@ -14,9 +14,9 @@ interface PathwayDisplayProps {
 const EpochCard: React.FC<{ epoch: Epoch }> = ({ epoch }) => (
   <div
     className="
-      glass-effect rounded-lg p-6 flex-1 min-w-[300px] snap-start
+      glass-effect rounded-lg p-6 w-full
       print-bg-white print-border-gray print-no-break
-      print:w-full print:min-w-0 print:max-w-none print:flex-none
+      print:w-full print:min-w-0 print:max-w-none
     "
   >
     <div className="flex justify-between items-center mb-4">
@@ -74,17 +74,11 @@ const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint }) => 
         </button>
       </div>
 
-      <div className="relative print:static">
-        <div
-          className="
-            flex space-x-6 overflow-x-auto pb-4 snap-x snap-mandatory
-            print:flex-col print:space-x-0 print:space-y-4 print:overflow-visible print:snap-none
-          "
-        >
-          {pathway.epochs.map((epoch, index) => (
-            <EpochCard key={index} epoch={epoch} />
-          ))}
-        </div>
+      {/* Cards wrap downward (no horizontal scroll) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 print:grid-cols-1 print:gap-4">
+        {pathway.epochs.map((epoch, index) => (
+          <EpochCard key={index} epoch={epoch} />
+        ))}
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 print:grid-cols-1">
