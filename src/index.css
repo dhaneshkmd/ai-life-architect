@@ -1,30 +1,75 @@
-/* ---------- PRINT STYLES ---------- */
+/* ===================== REPORT MODE (applies when body has class="report-mode") ===================== */
+.report-mode {
+  background: #ffffff !important;
+}
+.report-mode, .report-mode * {
+  -webkit-print-color-adjust: exact; 
+  print-color-adjust: exact;
+}
+
+/* kill glass/alpha while exporting */
+.report-mode .glass-effect,
+.report-mode .input-glass {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;     /* gray-200 */
+  box-shadow: 0 1px 0 rgba(0,0,0,.04) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* high-contrast text colors for report */
+.report-mode .text-brand-secondary,
+.report-mode .text-brand-muted { color: #0f172a !important; } /* slate-900 */
+.report-mode .text-brand-primary { color: #2563eb !important; } /* blue-600 */
+
+/* helpers for colorful report look */
+.report-title-gradient {
+  background-image: linear-gradient(90deg,#6366F1,#22D3EE); /* indigo->cyan */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.report-card { 
+  background:#fff !important; 
+  border:1px solid #e5e7eb !important; 
+  border-left-width:6px !important;
+}
+.badge-year    { background:#111827; color:#fff; border-radius:.375rem; }
+.badge-blue    { background:#e0e7ff; color:#1e40af; }
+.badge-emerald { background:#d1fae5; color:#065f46; }
+
+/* layout guards in report mode */
+.report-mode .print-no-break { break-inside: avoid; page-break-inside: avoid; }
+.report-mode .print-hide { display: none !important; }
+.report-mode .container, 
+.report-mode .mx-auto { max-width: none !important; }
+.report-mode .overflow-x-auto, 
+.report-mode .overflow-x-scroll { overflow-x: visible !important; }
+.report-mode .snap-x, 
+.report-mode .snap-mandatory { scroll-snap-type: none !important; }
+.report-mode .fixed, 
+.report-mode .sticky { position: static !important; }
+
+/* ===================== PRINT STYLES (when user hits browser print) ===================== */
 @media print {
-  /* keep brand colors & backgrounds in print */
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* page base */
   html, body {
     background: #ffffff !important;
-    overflow: visible !important;         /* no hidden/clipped content */
+    overflow: visible !important;
     height: auto !important;
     width: auto !important;
   }
 
-  /* helpers used in components */
   .print-hide { display: none !important; }
   .print-no-break { break-inside: avoid; page-break-inside: avoid; }
   .print-page-break-before { break-before: page !important; }
   .print-page-break-after  { break-after: page !important; }
 
-  /* remove horizontal scroll everywhere (even if a class slipped through) */
   .overflow-x-auto, .overflow-x-scroll { overflow-x: visible !important; }
   .snap-x, .snap-mandatory { scroll-snap-type: none !important; }
-
-  /* make containers use full width when printing */
   .container, .mx-auto { max-width: none !important; }
 
-  /* overrides for glass / shadows so paper is crisp */
   .glass-effect, .input-glass {
     background: #ffffff !important;
     box-shadow: none !important;
@@ -33,21 +78,28 @@
     -webkit-backdrop-filter: none !important;
   }
 
-  /* generic readability helpers */
+  /* readable text & backgrounds */
   .print-bg-white { background: #ffffff !important; }
   .print-text-black { color: #000000 !important; }
   .print-border-gray { border-color: #e5e7eb !important; }
 
-  /* avoid sticky/fixed elements messing with pagination */
   .fixed, .sticky { position: static !important; }
-
-  /* don’t append raw URLs after links */
   a[href]::after { content: "" !important; }
+
+  /* colorful report helpers are also valid in print */
+  .report-card { 
+    background:#fff !important; 
+    border:1px solid #e5e7eb !important; 
+    border-left-width:6px !important;
+  }
+  .badge-year    { background:#111827; color:#fff; }
+  .badge-blue    { background:#e0e7ff; color:#1e40af; }
+  .badge-emerald { background:#d1fae5; color:#065f46; }
 }
 
-/* optional: control default margins (browsers may override) */
+/* Page box */
 @page { margin: 12mm; }
-/* If you prefer forcing orientation, uncomment one of these:
+/* Uncomment one if you want to force orientation
 @page { size: A4 portrait; }
 @page { size: A4 landscape; }
 */
