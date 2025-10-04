@@ -42,19 +42,46 @@ const buildTenYearPathway = (profile: UserProfile): Pathway => {
     };
   });
 
+  // Light personalization for risks/indicators
+  const sr = profile.finance?.savingsRate ?? 0;
+  const cur = profile.finance?.currency ?? '';
+
+  const risks: string[] = [
+    'Overextension during 5/8 Personal Years; protect bandwidth and recovery.',
+    'Stagnation during 4/6 Personal Years; schedule deliberate creativity and play.',
+    'Misalignment: goals not mapped to yearly energy; run a quarterly realignment.',
+    'Decision paralysis from too many options; pre-commit to decision criteria.',
+    'Mission drift: saying yes to work that doesn’t fit your values/strategy.',
+    'Health erosion from inconsistent sleep/exercise; make routines non-negotiable.',
+    'Aggressive scaling risk (cashflow, hiring); use staged gates and stop-loss rules.',
+    'Social isolation during deep-work seasons; keep weekly relationship check-ins.',
+  ];
+
+  // Add finance-contextual risk if data is present
+  if (typeof sr === 'number') {
+    risks.push(
+      sr < 15
+        ? 'Low savings rate: build a 6-month buffer before high-risk moves.'
+        : 'Maintain savings discipline while experimenting; don’t dip below a 6-month buffer.'
+    );
+  }
+
+  const leading_indicators: string[] = [
+    'Quarterly progress on top-3 milestones (percent complete).',
+    'Weekly habit consistency rate ≥ 70% (rolling 4-week average).',
+    `Revenue / savings vs plan (monthly variance)${cur ? ` in ${cur}` : ''}.`,
+    'Learning hours logged per week (study/research blocks).',
+    'Wellbeing: sleep hours + recovery trend (if tracked).',
+    'Relationship health score (1–10) reviewed monthly.',
+    'Pipeline health: # of qualified opportunities / partnerships.',
+    'Focus time ratio: deep-work hours ÷ total work hours.',
+  ];
+
   return {
     horizon_years: 10,
     epochs,
-    risks: [
-      'Overextension during 5/8 Personal Years; protect bandwidth and recovery.',
-      'Stagnation during 4/6 Personal Years; schedule creativity and play.',
-      'Misalignment: goals not mapped to yearly energy; review quarterly.',
-    ],
-    leading_indicators: [
-      'Quarterly progress on top-3 milestones',
-      'Weekly habit completion rate ≥ 70%',
-      'Net energy score trending upward (self-assessed)',
-    ],
+    risks,
+    leading_indicators,
   };
 };
 
@@ -106,19 +133,21 @@ export const generateNumerologyReport = async (profile: UserProfile): Promise<Nu
     birthday_number: bday,
     birthday_interpretation: numberMeaning('birthday', bday),
 
-    pinnacles: pinnacles.map(p => ({
+    pinnacles: pinnacles.map((p) => ({
       ...p,
       meaning: `Pinnacle ${p.cycle}: ${numberMeaning('life', p.number)}`,
     })),
-    challenges: challenges.map(c => ({
+    challenges: challenges.map((c) => ({
       ...c,
       meaning: `Challenge ${c.cycle}: Develop the higher side of ${c.number}—turn friction into mastery.`,
     })),
 
     personal_years,
 
-    summary:
-      'This numerology profile is generated locally from your name and birth date. Use the Personal Year cycle to time moves: start/seed in 1, partner in 2, express in 3, build in 4, pivot in 5, nurture in 6, study in 7, execute/monetize in 8, complete/transition in 9. Master numbers (11/22/33) bring higher responsibility and visibility.',
+    summary: `This numerology profile is generated locally from your name and birth date. 
+Use the Personal Year cycle to time moves: start/seed in 1, partner in 2, express in 3, build in 4, pivot in 5, 
+nurture in 6, study in 7, execute/monetize in 8, complete/transition in 9. 
+Master numbers (11/22/33) bring higher responsibility and visibility.`,
   };
 
   return report;
