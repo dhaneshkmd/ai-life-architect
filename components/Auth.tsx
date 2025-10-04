@@ -6,8 +6,8 @@ interface AuthProps {
   onLoginSuccess: (email: string) => void;
 }
 
-/** --- Self-typing headline (no dependency) --- */
-const HeroTyping: React.FC = () => {
+/** --- Bottom fixed, slow typewriter line (no dependencies) --- */
+const HeroTypingBottom: React.FC = () => {
   const lines = [
     'Welcome to AI Life Architect...',
     'Craft your future, one choice at a time.',
@@ -16,46 +16,53 @@ const HeroTyping: React.FC = () => {
     'Design the life you dream of — with AI by your side.',
   ];
 
-  const [i, setI] = useState(0);           // which line
-  const [text, setText] = useState('');    // visible text
-  const [del, setDel] = useState(false);   // deleting?
-  const [speed, setSpeed] = useState(50);  // typing speed
+  const [i, setI]   = useState(0);      // which line
+  const [txt, setT] = useState('');     // visible text
+  const [del, setD] = useState(false);  // deleting?
 
   useEffect(() => {
     const full = lines[i];
-    if (!del && text.length < full.length) {
-      setSpeed(28); // typing
-      const t = setTimeout(() => setText(full.slice(0, text.length + 1)), speed);
+
+    // Slow L→R typing
+    if (!del && txt.length < full.length) {
+      const t = setTimeout(() => setT(full.slice(0, txt.length + 1)), 80);
       return () => clearTimeout(t);
     }
-    if (!del && text.length === full.length) {
-      const t = setTimeout(() => setDel(true), 1500); // pause at end
+    // Pause at end
+    if (!del && txt.length === full.length) {
+      const t = setTimeout(() => setD(true), 1600);
       return () => clearTimeout(t);
     }
-    if (del && text.length > 0) {
-      setSpeed(16); // deleting
-      const t = setTimeout(() => setText(full.slice(0, text.length - 1)), speed);
+    // Delete faster
+    if (del && txt.length > 0) {
+      const t = setTimeout(() => setT(full.slice(0, txt.length - 1)), 28);
       return () => clearTimeout(t);
     }
-    if (del && text.length === 0) {
+    // Next line
+    if (del && txt.length === 0) {
       const t = setTimeout(() => {
-        setDel(false);
-        setI((prev) => (prev + 1) % lines.length);
+        setD(false);
+        setI((p) => (p + 1) % lines.length);
       }, 400);
       return () => clearTimeout(t);
     }
-  }, [text, del, i]);
+  }, [txt, del, i]);
 
   return (
-    <div className="mx-auto mb-8 max-w-3xl text-center px-2">
-      <p className="text-xl md:text-2xl font-semibold text-white/95">
-        {text}
+    <div
+      aria-hidden
+      className="pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-20 w-[92vw] max-w-3xl px-4"
+    >
+      <div className="mx-auto rounded-full backdrop-blur-xl bg-black/25 ring-1 ring-white/10 px-4 py-2 text-center">
+        <span className="text-white/95 text-sm md:text-lg font-medium tracking-wide">
+          {txt}
+        </span>
         <span className="ml-1 inline-block w-[0.6ch] animate-pulse">|</span>
-      </p>
+      </div>
     </div>
   );
 };
-/** ------------------------------------------- */
+/** ----------------------------------------------------------- */
 
 const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -93,9 +100,6 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
           <h1 className="text-3xl font-bold text-white mt-4">AI Life Architect</h1>
           <p className="text-white/70">Welcome to your future. Sign in to continue.</p>
         </div>
-
-        {/* 🔥 Self-typing teaser */}
-        <HeroTyping />
 
         {/* Glass Card */}
         <div className="relative rounded-2xl p-8 shadow-2xl backdrop-blur-xl bg-white/5 ring-1 ring-white/10">
@@ -207,6 +211,9 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
           </form>
         </div>
       </div>
+
+      {/* Bottom self-typing line (identical on mobile & desktop) */}
+      <HeroTypingBottom />
     </div>
   );
 };
