@@ -1,38 +1,26 @@
-
 const sumDigits = (num: number): number => {
-    let sum = 0;
-    while (num > 0) {
-        sum += num % 10;
-        num = Math.floor(num / 10);
-    }
-    return sum;
+  return num
+    .toString()
+    .split('')
+    .map(Number)
+    .reduce((a, b) => a + b, 0);
 };
 
 export const calculateLifePathNumber = (dob: string): number => {
-    if (!dob) return 0;
-    
-    const [year, month, day] = dob.split('-').map(Number);
+  if (!dob) return 0;
 
-    let yearSum = year;
-    while (yearSum > 9) {
-        yearSum = sumDigits(yearSum);
-    }
+  // Expecting ISO format YYYY-MM-DD
+  const digits = dob.replace(/[^0-9]/g, ''); // strip non-digits
+  let totalSum = digits
+    .split('')
+    .map(Number)
+    .reduce((a, b) => a + b, 0);
 
-    let monthSum = month;
-    while (monthSum > 9 && monthSum !== 11) {
-        monthSum = sumDigits(monthSum);
-    }
+  const masterNumbers = new Set([11, 22, 33]);
 
-    let daySum = day;
-    while (daySum > 9 && daySum !== 11 && daySum !== 22) {
-        daySum = sumDigits(daySum);
-    }
+  while (totalSum > 9 && !masterNumbers.has(totalSum)) {
+    totalSum = sumDigits(totalSum);
+  }
 
-    let totalSum = yearSum + monthSum + daySum;
-
-    while (totalSum > 9 && totalSum !== 11 && totalSum !== 22 && totalSum !== 33) {
-        totalSum = sumDigits(totalSum);
-    }
-
-    return totalSum;
+  return totalSum;
 };
