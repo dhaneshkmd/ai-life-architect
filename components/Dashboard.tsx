@@ -20,6 +20,8 @@ interface DashboardProps {
   numerologyReport: NumerologyReport;
 }
 
+/* ---------- Small components ---------- */
+
 const InfoCard = ({
   title,
   value,
@@ -43,11 +45,30 @@ const InfoCard = ({
   </div>
 );
 
+const ReportHeader: React.FC<{ name: string }> = ({ name }) => {
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
+  return (
+    <header className="mb-8 report-card border-l-indigo-400 rounded-xl p-5 print-no-break">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+        <div>
+          <h1 className="text-3xl font-extrabold report-title-gradient print:text-slate-900">
+            AI Life Architect — Personal Plan
+          </h1>
+          <p className="text-slate-600">Prepared for <span className="font-semibold">{name}</span></p>
+        </div>
+        <div className="text-slate-500 text-sm">Generated on {today}</div>
+      </div>
+    </header>
+  );
+};
+
 const UserProfileSnapshot: React.FC<{ userProfile: UserProfile }> = ({ userProfile }) => {
   const lifePathNumber = calculateLifePathNumber(userProfile.dob);
   return (
-    <div className="mb-12 print-no-break">
-      <h2 className="text-3xl font-bold text-brand-secondary mb-4 print-text-black">
+    <section className="mb-12 print-no-break">
+      <h2 className="text-2xl font-bold text-brand-secondary mb-4 print-text-black">
         Your Digital Twin Snapshot
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -72,11 +93,12 @@ const UserProfileSnapshot: React.FC<{ userProfile: UserProfile }> = ({ userProfi
           "{userProfile.lifeGoal}"
         </p>
       </div>
-    </div>
+    </section>
   );
 };
 
-/** Load html2pdf bundle from CDN only when needed */
+/* ---------- html2pdf loader & report-mode toggles ---------- */
+
 const ensureHtml2Pdf = (): Promise<any> => {
   if (window.html2pdf) return Promise.resolve(window.html2pdf);
   return new Promise((resolve, reject) => {
@@ -89,16 +111,16 @@ const ensureHtml2Pdf = (): Promise<any> => {
   });
 };
 
-/** Helpers to toggle the high-contrast print/PDF theme */
 const addReportMode = () => document.body.classList.add('report-mode', 'printing-main');
 const removeReportMode = () => document.body.classList.remove('report-mode', 'printing-main');
+
+/* ---------- Main ---------- */
 
 const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyReport }) => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     addReportMode();
-    // ensure styles are applied before opening the print dialog
     requestAnimationFrame(() => {
       window.print();
       removeReportMode();
@@ -109,8 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
     if (!printRef.current) return;
     try {
       addReportMode();
-      // let the DOM restyle into report mode before capture
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await new Promise<void>((r) => requestAnimationFrame(() => r())); // let styles apply
 
       const html2pdf = await ensureHtml2Pdf();
       const filename = `AI-Life-Architect_${userProfile.name.replace(/\s+/g, '_')}_plan.pdf`;
@@ -125,7 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
             useCORS: true,
             scrollX: 0,
             scrollY: -window.scrollY,
-            backgroundColor: '#ffffff', // critical to avoid grey wash
+            backgroundColor: '#ffffff', // prevents gray wash
           },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
@@ -143,21 +164,30 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
 
   return (
     <div className="space-y-12 animate-fade-in print:space-y-10 print:max-w-none">
-      <div id="printable-area" ref={printRef}>
-        {/* Snapshot */}
-        <UserProfileSnapshot userProfile={userProfile} />
+      {/* Report Sheet: solid white background so screen + PDF are crisp */}
+      <div
+        id="printable-area"
+        ref={printRef}
+        className="report-sheet mx-auto rounded-2xl md:rounded-3xl shadow-xl print:shadow-none"
+        style={{ backgroundColor: '#ffffff' }}  // hard fallback even without CSS
+      >
+        <div className="p-4 md:p-8 lg:p-10">
+          <ReportHeader name={userProfile.name} />
 
-        {/* Numerology */}
-        <div className="print-no-break">
-          <NumerologyReportDisplay userProfile={userProfile} report={numerologyReport} />
-        </div>
+          {/* Snapshot */}
+          <UserProfileSnapshot userProfile={userProfile} />
 
-        {/* Pathway starts on new page for print/PDF */}
-        <div style={{ breakBefore: 'page' }}>
+          {/* Numerology (now detailed & white inside the component) */}
+          <div className="print-no-break">
+            <NumerologyReportDisplay userProfile={userProfile} report={numerologyReport} />
+          </div>
+
+          {/* Pathway starts on a fresh page for print/PDF */}
+          <div className="print-page-break-before" />
           <PathwayDisplay
             pathway={pathway}
             onPrint={handlePrint}
-            onExportPdf={handleExportPdf}  // show Download PDF button inside Pathway section
+            onExportPdf={handleExportPdf}
           />
         </div>
       </div>
@@ -180,7 +210,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
         </div>
       </div>
 
-      {/* Simulator hidden in print */}
+      {/* Simulator (never printed) */}
       <div id="simulator-section" className="print-hide">
         <ScenarioSimulator userProfile={userProfile} />
       </div>
