@@ -3,18 +3,51 @@
   /* keep brand colors & backgrounds in print */
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
+  /* page base */
+  html, body {
+    background: #ffffff !important;
+    overflow: visible !important;         /* no hidden/clipped content */
+    height: auto !important;
+    width: auto !important;
+  }
+
   /* helpers used in components */
   .print-hide { display: none !important; }
   .print-no-break { break-inside: avoid; page-break-inside: avoid; }
+  .print-page-break-before { break-before: page !important; }
+  .print-page-break-after  { break-after: page !important; }
 
-  /* overrides for glass cards so they’re readable on paper */
+  /* remove horizontal scroll everywhere (even if a class slipped through) */
+  .overflow-x-auto, .overflow-x-scroll { overflow-x: visible !important; }
+  .snap-x, .snap-mandatory { scroll-snap-type: none !important; }
+
+  /* make containers use full width when printing */
+  .container, .mx-auto { max-width: none !important; }
+
+  /* overrides for glass / shadows so paper is crisp */
+  .glass-effect, .input-glass {
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border-color: #e5e7eb !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* generic readability helpers */
   .print-bg-white { background: #ffffff !important; }
   .print-text-black { color: #000000 !important; }
   .print-border-gray { border-color: #e5e7eb !important; }
 
-  /* optional: make page background white when printing */
-  body { background: #ffffff !important; }
+  /* avoid sticky/fixed elements messing with pagination */
+  .fixed, .sticky { position: static !important; }
+
+  /* don’t append raw URLs after links */
+  a[href]::after { content: "" !important; }
 }
 
-/* optional: control default margins (browser may ignore) */
+/* optional: control default margins (browsers may override) */
 @page { margin: 12mm; }
+/* If you prefer forcing orientation, uncomment one of these:
+@page { size: A4 portrait; }
+@page { size: A4 landscape; }
+*/
