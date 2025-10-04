@@ -1,0 +1,20 @@
+/* ---------- PRINT STYLES ---------- */
+@media print {
+  /* keep brand colors & backgrounds in print */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* helpers used in components */
+  .print-hide { display: none !important; }
+  .print-no-break { break-inside: avoid; page-break-inside: avoid; }
+
+  /* overrides for glass cards so they’re readable on paper */
+  .print-bg-white { background: #ffffff !important; }
+  .print-text-black { color: #000000 !important; }
+  .print-border-gray { border-color: #e5e7eb !important; }
+
+  /* optional: make page background white when printing */
+  body { background: #ffffff !important; }
+}
+
+/* optional: control default margins (browser may ignore) */
+@page { margin: 12mm; }
