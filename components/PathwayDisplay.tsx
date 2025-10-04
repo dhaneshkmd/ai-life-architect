@@ -9,7 +9,26 @@ import { PrintIcon } from './icons/PrintIcon';
 interface PathwayDisplayProps {
   pathway: Pathway;
   onPrint: () => void;
+  onExportPdf?: () => void; // NEW: optional download handler
 }
+
+// lightweight inline download icon (so we don't rely on another file)
+const DownloadIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 3v12" />
+    <path d="M7 11l5 5 5-5" />
+    <path d="M20 21H4" />
+  </svg>
+);
 
 const EpochCard: React.FC<{ epoch: Epoch }> = ({ epoch }) => (
   <div
@@ -53,7 +72,7 @@ const EpochCard: React.FC<{ epoch: Epoch }> = ({ epoch }) => (
   </div>
 );
 
-const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint }) => {
+const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint, onExportPdf }) => {
   return (
     <div className="space-y-8 print:max-w-none">
       <div className="flex justify-between items-start">
@@ -65,13 +84,27 @@ const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint }) => 
             This is your AI-generated strategic blueprint. Remember, it's a living document, meant to adapt as you grow.
           </p>
         </div>
-        <button
-          onClick={onPrint}
-          className="print-hide inline-flex items-center gap-2 px-4 py-2 border border-brand-border text-sm font-medium rounded-md shadow-sm text-brand-secondary bg-brand-surface/50 hover:bg-brand-surface transition-colors"
-        >
-          <PrintIcon className="h-5 w-5" />
-          Print Plan
-        </button>
+
+        {/* Actions (hidden on print) */}
+        <div className="print-hide flex items-center gap-2">
+          <button
+            onClick={onPrint}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-brand-border text-sm font-medium rounded-md shadow-sm text-brand-secondary bg-brand-surface/50 hover:bg-brand-surface transition-colors"
+          >
+            <PrintIcon className="h-5 w-5" />
+            Print
+          </button>
+
+          {onExportPdf && (
+            <button
+              onClick={onExportPdf}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-brand-border text-sm font-medium rounded-md shadow-sm text-brand-secondary bg-brand-surface/50 hover:bg-brand-surface transition-colors"
+            >
+              <DownloadIcon />
+              Download PDF
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Cards wrap downward (no horizontal scroll) */}
@@ -81,7 +114,7 @@ const PathwayDisplay: React.FC<PathwayDisplayProps> = ({ pathway, onPrint }) => 
         ))}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 print:grid-cols-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-1">
         <div className="glass-effect rounded-lg p-6 print-bg-white print-border-gray print-no-break">
           <h3 className="text-lg font-bold text-brand-secondary mb-3 flex items-center gap-2 print-text-black">
             <RiskIcon className="h-5 w-5 text-red-400" />
