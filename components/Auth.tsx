@@ -1,10 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LogoIcon } from './icons/LogoIcon';
 import Spinner from './Spinner';
 
 interface AuthProps {
   onLoginSuccess: (email: string) => void;
 }
+
+/** --- Self-typing headline (no dependency) --- */
+const HeroTyping: React.FC = () => {
+  const lines = [
+    'Welcome to AI Life Architect...',
+    'Craft your future, one choice at a time.',
+    'Discover your Life Path & hidden potential.',
+    'Simulate career, finance, health, and destiny.',
+    'Design the life you dream of — with AI by your side.',
+  ];
+
+  const [i, setI] = useState(0);           // which line
+  const [text, setText] = useState('');    // visible text
+  const [del, setDel] = useState(false);   // deleting?
+  const [speed, setSpeed] = useState(50);  // typing speed
+
+  useEffect(() => {
+    const full = lines[i];
+    if (!del && text.length < full.length) {
+      setSpeed(28); // typing
+      const t = setTimeout(() => setText(full.slice(0, text.length + 1)), speed);
+      return () => clearTimeout(t);
+    }
+    if (!del && text.length === full.length) {
+      const t = setTimeout(() => setDel(true), 1500); // pause at end
+      return () => clearTimeout(t);
+    }
+    if (del && text.length > 0) {
+      setSpeed(16); // deleting
+      const t = setTimeout(() => setText(full.slice(0, text.length - 1)), speed);
+      return () => clearTimeout(t);
+    }
+    if (del && text.length === 0) {
+      const t = setTimeout(() => {
+        setDel(false);
+        setI((prev) => (prev + 1) % lines.length);
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [text, del, i]);
+
+  return (
+    <div className="mx-auto mb-8 max-w-3xl text-center px-2">
+      <p className="text-xl md:text-2xl font-semibold text-white/95">
+        {text}
+        <span className="ml-1 inline-block w-[0.6ch] animate-pulse">|</span>
+      </p>
+    </div>
+  );
+};
+/** ------------------------------------------- */
 
 const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -21,14 +72,12 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
     setError('');
 
-    // Very basic demo validation
     if (!email || !password || (!isLoginView && !fullName)) {
       setError('Please fill all required fields.');
       setIsLoading(false);
       return;
     }
 
-    // Simulate API
     setTimeout(() => {
       setIsLoading(false);
       onLoginSuccess(email);
@@ -38,23 +87,18 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   return (
     <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Heading */}
-        <div className="text-center mb-8">
+        {/* Logo + Title */}
+        <div className="text-center mb-4">
           <LogoIcon className="h-12 w-12 text-brand-primary mx-auto" />
           <h1 className="text-3xl font-bold text-white mt-4">AI Life Architect</h1>
-          <p className="text-brand-muted">Welcome to your future. Sign in to continue.</p>
+          <p className="text-white/70">Welcome to your future. Sign in to continue.</p>
         </div>
 
-        {/* Card */}
-        <div
-          className="
-            relative rounded-2xl p-8 shadow-2xl
-            backdrop-blur-xl bg-white/5
-            ring-1 ring-white/10
-            before:absolute before:inset-0 before:-z-10
-            before:rounded-2xl before:bg-gradient-to-br before:from-white/10 before:to-transparent
-          "
-        >
+        {/* 🔥 Self-typing teaser */}
+        <HeroTyping />
+
+        {/* Glass Card */}
+        <div className="relative rounded-2xl p-8 shadow-2xl backdrop-blur-xl bg-white/5 ring-1 ring-white/10">
           {/* Tabs */}
           <div className="flex border-b border-white/10 mb-6" role="tablist" aria-label="Auth tabs">
             <button
@@ -64,7 +108,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
               className={`w-1/2 py-3 text-sm font-medium transition-colors ${
                 isLoginView
                   ? 'text-brand-primary border-b-2 border-brand-primary'
-                  : 'text-brand-muted hover:text-brand-secondary'
+                  : 'text-white/60 hover:text-white'
               }`}
             >
               Login
@@ -76,7 +120,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
               className={`w-1/2 py-3 text-sm font-medium transition-colors ${
                 !isLoginView
                   ? 'text-brand-primary border-b-2 border-brand-primary'
-                  : 'text-brand-muted hover:text-brand-secondary'
+                  : 'text-white/60 hover:text-white'
               }`}
             >
               Register
@@ -156,23 +200,11 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="
-                w-full inline-flex justify-center items-center px-6 py-3
-                text-base font-medium rounded-md shadow-lg
-                text-white bg-brand-primary hover:bg-blue-500
-                disabled:bg-gray-600 transition-all hover:shadow-brand-glow
-              "
+              className="w-full inline-flex justify-center items-center px-6 py-3 text-base font-medium rounded-md shadow-lg text-white bg-brand-primary hover:bg-blue-500 disabled:bg-gray-600 transition-all hover:shadow-brand-glow"
             >
               {isLoading ? <Spinner /> : isLoginView ? 'Sign In' : 'Create Account'}
             </button>
           </form>
-
-          {/* Optional: Social row (placeholders) 
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button className="rounded-md bg-white/10 hover:bg-white/15 py-2 text-sm">Google</button>
-            <button className="rounded-md bg-white/10 hover:bg-white/15 py-2 text-sm">GitHub</button>
-          </div>
-          */}
         </div>
       </div>
     </div>
