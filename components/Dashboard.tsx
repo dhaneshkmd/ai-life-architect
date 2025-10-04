@@ -89,42 +89,55 @@ const ensureHtml2Pdf = (): Promise<any> => {
   });
 };
 
+/** Helpers to toggle the high-contrast print/PDF theme */
+const addReportMode = () => document.body.classList.add('report-mode', 'printing-main');
+const removeReportMode = () => document.body.classList.remove('report-mode', 'printing-main');
+
 const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyReport }) => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
-    document.body.classList.add('printing-main');
-    document.body.classList.remove('printing-scenario');
-    setTimeout(() => {
+    addReportMode();
+    // ensure styles are applied before opening the print dialog
+    requestAnimationFrame(() => {
       window.print();
-      document.body.classList.remove('printing-main');
-    }, 0);
+      removeReportMode();
+    });
   };
 
   const handleExportPdf = async () => {
     if (!printRef.current) return;
     try {
-      document.body.classList.add('printing-main'); // use print CSS for layout
+      addReportMode();
+      // let the DOM restyle into report mode before capture
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
       const html2pdf = await ensureHtml2Pdf();
-
       const filename = `AI-Life-Architect_${userProfile.name.replace(/\s+/g, '_')}_plan.pdf`;
-      const options = {
-        margin: [10, 10, 10, 10],
-        filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: -window.scrollY },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-      };
 
-      await html2pdf().set(options).from(printRef.current).save();
+      await html2pdf()
+        .set({
+          margin: [10, 10, 10, 10],
+          filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2.5,
+            useCORS: true,
+            scrollX: 0,
+            scrollY: -window.scrollY,
+            backgroundColor: '#ffffff', // critical to avoid grey wash
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(printRef.current)
+        .save();
     } catch (e) {
       console.error(e);
-      // graceful fallback
-      window.alert('Could not generate PDF automatically. Opening print dialog instead.');
+      alert('Could not generate PDF automatically. Opening print dialog instead.');
       window.print();
     } finally {
-      document.body.classList.remove('printing-main');
+      removeReportMode();
     }
   };
 
@@ -144,10 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
           <PathwayDisplay
             pathway={pathway}
             onPrint={handlePrint}
-            // pass the PDF downloader to show the button in PathwayDisplay
-            // (PathwayDisplay has onExportPdf?: () => void)
-            // If you kept it optional, this is safe.
-            onExportPdf={handleExportPdf}
+            onExportPdf={handleExportPdf}  // show Download PDF button inside Pathway section
           />
         </div>
       </div>
