@@ -9,9 +9,6 @@ import { FinanceIcon } from './icons/FinanceIcon';
 import { HealthIcon } from './icons/HealthIcon';
 import NumerologyReportDisplay from './NumerologyReportDisplay';
 
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
-import { saveAs } from 'file-saver';
-
 interface DashboardProps {
   userProfile: UserProfile;
   pathway: Pathway;
@@ -99,32 +96,72 @@ const UserProfileSnapshot: React.FC<{ userProfile: UserProfile }> = ({ userProfi
 const addReportMode = () => document.body.classList.add('report-mode', 'printing-main');
 const removeReportMode = () => document.body.classList.remove('report-mode', 'printing-main');
 
-/* ---------- Word export (reads text from the rendered report) ---------- */
-const exportNodeToWord = async (root: HTMLElement, filename: string) => {
-  // Gather visible text with basic paragraph splitting
-  const text = root.innerText
-    .replace(/\r/g, '')
-    .split(/\n{2,}/g)
-    .map(s => s.trim())
-    .filter(Boolean);
+/* ---------- DOM → Word: preserve H1–H3 and bullets ---------- */
+async function exportDomToWord(root: HTMLElement, filename: string) {
+  // dynamic imports prevent Vite/Vercel bundling errors and reduce initial bundle size
+  const docx = await import('docx');
+  const fileSaver = await import('file-saver');
 
-  const children: Paragraph[] = [
-    new Paragraph({ text: 'AI Life Architect — Personal Plan', heading: HeadingLevel.HEADING_1 }),
-  ];
+  const {
+    Document, Packer, Paragraph, TextRun, HeadingLevel
+  } = docx as any;
+  const saveAs = (fileSaver as any).saveAs || (fileSaver as any).default;
 
-  text.forEach((block) => {
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: block })],
-        spacing: { after: 200 },
-      })
-    );
+  const paras: any[] = [];
+
+  // Helper to push a plain paragraph
+  const pushP = (text: string) =>
+    paras.push(new Paragraph({ children: [new TextRun({ text })], spacing: { after: 200 } }));
+
+  // Walk the relevant nodes (keep order)
+  const nodes = root.querySelectorAll('h1, h2, h3, h4, h5, p, ul, ol, li');
+
+  // Track whether we are inside a list for nicer spacing
+  let inList = false;
+
+  nodes.forEach((el) => {
+    const tag = el.tagName.toLowerCase();
+    const text = el.textContent?.trim();
+    if (!text) return;
+
+    if (tag === 'ul' || tag === 'ol') {
+      // container only; list items handled by 'li'
+      inList = true;
+      return;
+    }
+
+    switch (tag) {
+      case 'h1':
+        paras.push(new Paragraph({ text, heading: HeadingLevel.HEADING_1 }));
+        inList = false;
+        break;
+      case 'h2':
+        paras.push(new Paragraph({ text, heading: HeadingLevel.HEADING_2 }));
+        inList = false;
+        break;
+      case 'h3':
+        paras.push(new Paragraph({ text, heading: HeadingLevel.HEADING_3 }));
+        inList = false;
+        break;
+      case 'li':
+        paras.push(
+          new Paragraph({
+            children: [new TextRun({ text: '• ' + text })],
+            spacing: { before: inList ? 60 : 100, after: 60 },
+          })
+        );
+        break;
+      default: // p, h4, h5 fallback
+        pushP(text);
+        inList = false;
+        break;
+    }
   });
 
-  const doc = new Document({ sections: [{ children }] });
+  const doc = new Document({ sections: [{ children: paras }] });
   const blob = await Packer.toBlob(doc);
   saveAs(blob, filename.endsWith('.docx') ? filename : `${filename}.docx`);
-};
+}
 
 /* ---------- Main ---------- */
 
@@ -138,7 +175,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
   }, []);
 
   const handlePrint = () => {
-    // ensure report-mode styles are applied while printing
     addReportMode();
     requestAnimationFrame(() => {
       window.print();
@@ -149,7 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
   const handleExportWord = async () => {
     if (!printRef.current) return;
     const filename = `AI-Life-Architect_${userProfile.name.replace(/\s+/g, '_')}_plan.docx`;
-    await exportNodeToWord(printRef.current, filename);
+    await exportDomToWord(printRef.current, filename);
   };
 
   return (
@@ -177,7 +213,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
           <PathwayDisplay
             pathway={pathway}
             onPrint={handlePrint}
-            /* removed PDF handler */
+            /* PDF removed */
           />
         </div>
       </div>
