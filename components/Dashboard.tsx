@@ -1,3 +1,4 @@
+// src/components/Dashboard.tsx
 import React, { useRef } from 'react';
 import { UserProfile, Pathway, NumerologyReport } from '../types';
 import PathwayDisplay from './PathwayDisplay';
@@ -8,11 +9,8 @@ import { FinanceIcon } from './icons/FinanceIcon';
 import { HealthIcon } from './icons/HealthIcon';
 import NumerologyReportDisplay from './NumerologyReportDisplay';
 
-declare global {
-  interface Window {
-    html2pdf?: any;
-  }
-}
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { saveAs } from 'file-saver';
 
 interface DashboardProps {
   userProfile: UserProfile;
@@ -53,12 +51,12 @@ const ReportHeader: React.FC<{ name: string }> = ({ name }) => {
     <header className="mb-8 report-card border-l-indigo-400 rounded-xl p-5 print-no-break">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-extrabold report-title-gradient print:text-slate-900">
+          <h1 className="text-3xl md:text-4xl font-extrabold report-title-gradient print:text-slate-900">
             AI Life Architect — Personal Plan
           </h1>
-          <p className="text-slate-600">Prepared for <span className="font-semibold">{name}</span></p>
+          <p className="opacity-90">Prepared for <span className="font-semibold">{name}</span></p>
         </div>
-        <div className="text-slate-500 text-sm">Generated on {today}</div>
+        <div className="text-sm opacity-80">Generated on {today}</div>
       </div>
     </header>
   );
@@ -68,7 +66,7 @@ const UserProfileSnapshot: React.FC<{ userProfile: UserProfile }> = ({ userProfi
   const lifePathNumber = calculateLifePathNumber(userProfile.dob);
   return (
     <section className="mb-12 print-no-break">
-      <h2 className="text-2xl font-bold text-brand-secondary mb-4 print-text-black">
+      <h2 className="text-2xl md:text-3xl font-bold text-brand-secondary mb-4 print-text-black">
         Your Digital Twin Snapshot
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -97,29 +95,50 @@ const UserProfileSnapshot: React.FC<{ userProfile: UserProfile }> = ({ userProfi
   );
 };
 
-/* ---------- html2pdf loader & report-mode toggles ---------- */
-
-const ensureHtml2Pdf = (): Promise<any> => {
-  if (window.html2pdf) return Promise.resolve(window.html2pdf);
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
-    s.async = true;
-    s.onload = () => resolve(window.html2pdf);
-    s.onerror = () => reject(new Error('Failed to load html2pdf bundle'));
-    document.body.appendChild(s);
-  });
-};
-
+/* ---------- report-mode toggles (used for screen skin + print) ---------- */
 const addReportMode = () => document.body.classList.add('report-mode', 'printing-main');
 const removeReportMode = () => document.body.classList.remove('report-mode', 'printing-main');
+
+/* ---------- Word export (reads text from the rendered report) ---------- */
+const exportNodeToWord = async (root: HTMLElement, filename: string) => {
+  // Gather visible text with basic paragraph splitting
+  const text = root.innerText
+    .replace(/\r/g, '')
+    .split(/\n{2,}/g)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const children: Paragraph[] = [
+    new Paragraph({ text: 'AI Life Architect — Personal Plan', heading: HeadingLevel.HEADING_1 }),
+  ];
+
+  text.forEach((block) => {
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: block })],
+        spacing: { after: 200 },
+      })
+    );
+  });
+
+  const doc = new Document({ sections: [{ children }] });
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, filename.endsWith('.docx') ? filename : `${filename}.docx`);
+};
 
 /* ---------- Main ---------- */
 
 const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyReport }) => {
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Apply the new light-blue + white theme for the report region on mount
+  React.useEffect(() => {
+    addReportMode();
+    return () => removeReportMode();
+  }, []);
+
   const handlePrint = () => {
+    // ensure report-mode styles are applied while printing
     addReportMode();
     requestAnimationFrame(() => {
       window.print();
@@ -127,49 +146,20 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
     });
   };
 
-  const handleExportPdf = async () => {
+  const handleExportWord = async () => {
     if (!printRef.current) return;
-    try {
-      addReportMode();
-      await new Promise<void>((r) => requestAnimationFrame(() => r())); // let styles apply
-
-      const html2pdf = await ensureHtml2Pdf();
-      const filename = `AI-Life-Architect_${userProfile.name.replace(/\s+/g, '_')}_plan.pdf`;
-
-      await html2pdf()
-        .set({
-          margin: [10, 10, 10, 10],
-          filename,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2.5,
-            useCORS: true,
-            scrollX: 0,
-            scrollY: -window.scrollY,
-            backgroundColor: '#ffffff', // prevents gray wash
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-        })
-        .from(printRef.current)
-        .save();
-    } catch (e) {
-      console.error(e);
-      alert('Could not generate PDF automatically. Opening print dialog instead.');
-      window.print();
-    } finally {
-      removeReportMode();
-    }
+    const filename = `AI-Life-Architect_${userProfile.name.replace(/\s+/g, '_')}_plan.docx`;
+    await exportNodeToWord(printRef.current, filename);
   };
 
   return (
     <div className="space-y-12 animate-fade-in print:space-y-10 print:max-w-none">
-      {/* Report Sheet: solid white background so screen + PDF are crisp */}
+      {/* Report Sheet: allow gradient to show (no hard white background) */}
       <div
         id="printable-area"
         ref={printRef}
         className="report-sheet mx-auto rounded-2xl md:rounded-3xl shadow-xl print:shadow-none"
-        style={{ backgroundColor: '#ffffff' }}  // hard fallback even without CSS
+        style={{ backgroundColor: 'transparent' }}
       >
         <div className="p-4 md:p-8 lg:p-10">
           <ReportHeader name={userProfile.name} />
@@ -177,17 +167,17 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
           {/* Snapshot */}
           <UserProfileSnapshot userProfile={userProfile} />
 
-          {/* Numerology (now detailed & white inside the component) */}
+          {/* Numerology */}
           <div className="print-no-break">
             <NumerologyReportDisplay userProfile={userProfile} report={numerologyReport} />
           </div>
 
-          {/* Pathway starts on a fresh page for print/PDF */}
+          {/* Pathway starts on a fresh page for print */}
           <div className="print-page-break-before" />
           <PathwayDisplay
             pathway={pathway}
             onPrint={handlePrint}
-            onExportPdf={handleExportPdf}
+            /* removed PDF handler */
           />
         </div>
       </div>
@@ -202,10 +192,10 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile, pathway, numerologyR
             🖨 Print
           </button>
           <button
-            onClick={handleExportPdf}
+            onClick={handleExportWord}
             className="inline-flex items-center gap-2 px-4 py-2 border border-brand-border text-sm font-medium rounded-md shadow-sm text-brand-secondary bg-brand-surface/50 hover:bg-brand-surface transition-colors"
           >
-            ⤓ Download PDF
+            ⤓ Download Word
           </button>
         </div>
       </div>
