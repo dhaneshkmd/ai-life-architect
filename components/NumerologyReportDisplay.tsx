@@ -213,7 +213,7 @@ const DETAILS: Record<NumberKey, Record<Bucket, string[]>> = {
   },
 };
 
-/* Helper to render a 2-column “detail” section for one number */
+/* Helper to render a 2-column section for one number */
 const DetailSection = ({
   title,
   n,
@@ -225,29 +225,29 @@ const DetailSection = ({
 }) => {
   const d = DETAILS[n] || DETAILS[1];
   return (
-    <div className={`report-card ${accent} rounded-xl p-6 print-no-break`}>
+    <div className={`glass-effect report-card ${accent} rounded-xl p-6 print-no-break print-bg-white print-border-gray`}>
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-xl font-bold text-slate-900">{title}</h4>
+        <h4 className="text-xl font-bold text-brand-secondary print-text-black">{title}</h4>
         <span className="badge-emerald text-xs px-2 py-0.5 rounded">No. {n}</span>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <h5 className="font-semibold text-slate-800">Strengths</h5>
-          <ul className="list-disc list-inside text-slate-700 space-y-1">
+          <h5 className="font-semibold text-brand-secondary print-text-black">Strengths</h5>
+          <ul className="list-disc list-inside text-brand-muted print-text-black space-y-1">
             {d.strengths.map((t, i) => <li key={i}>{t}</li>)}
           </ul>
-          <h5 className="mt-3 font-semibold text-slate-800">Growth Edges</h5>
-          <ul className="list-disc list-inside text-slate-700 space-y-1">
+          <h5 className="mt-3 font-semibold text-brand-secondary print-text-black">Growth Edges</h5>
+          <ul className="list-disc list-inside text-brand-muted print-text-black space-y-1">
             {d.growth.map((t, i) => <li key={i}>{t}</li>)}
           </ul>
         </div>
         <div>
-          <h5 className="font-semibold text-slate-800">Career & Money</h5>
-          <ul className="list-disc list-inside text-slate-700 space-y-1">
+          <h5 className="font-semibold text-brand-secondary print-text-black">Career & Money</h5>
+          <ul className="list-disc list-inside text-brand-muted print-text-black space-y-1">
             {d.careers.map((t, i) => <li key={i}>{t}</li>)}
           </ul>
-          <h5 className="mt-3 font-semibold text-slate-800">Love & Relationships</h5>
-          <ul className="list-disc list-inside text-slate-700 space-y-1">
+          <h5 className="mt-3 font-semibold text-brand-secondary print-text-black">Love & Relationships</h5>
+          <ul className="list-disc list-inside text-brand-muted print-text-black space-y-1">
             {d.relationships.map((t, i) => <li key={i}>{t}</li>)}
           </ul>
         </div>
@@ -261,29 +261,28 @@ const NumerologyReportDisplay: React.FC<{
   userProfile: UserProfile;
   report: NumerologyReport;
 }> = ({ userProfile, report }) => {
-  // loose access to optional fields if present
   const r: any = report;
 
   return (
-    <div className="my-12 rounded-2xl p-8 bg-white/95 border border-slate-200 shadow-lg print-bg-white print-border-gray">
+    <div className="my-12 rounded-2xl p-8 glass-effect border border-white/20 shadow-lg print-bg-white print-border-gray">
       {/* Header */}
       <h2 className="text-3xl font-extrabold mb-2 report-title-gradient print:text-slate-900">
         Your Personal Numerology Report
       </h2>
-      <p className="text-slate-600 mb-6 max-w-2xl">
+      <p className="text-brand-muted mb-6 max-w-2xl print-text-black">
         An esoteric blueprint based on the vibrations of your name and date of birth.
       </p>
 
       {/* Identity row */}
-      <div className="report-card border-l-indigo-400 rounded-xl p-5 mb-8">
+      <div className="report-card glass-effect border-l-indigo-400 rounded-xl p-5 mb-8 print-bg-white print-border-gray">
         <div className="grid sm:grid-cols-2 gap-6">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Full Name</p>
-            <p className="text-lg font-semibold text-slate-900">{userProfile.name}</p>
+            <p className="text-xs uppercase tracking-wide text-brand-muted print-text-black">Full Name</p>
+            <p className="text-lg font-semibold text-brand-secondary print-text-black">{userProfile.name}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Date of Birth</p>
-            <p className="text-lg font-semibold text-slate-900">
+            <p className="text-xs uppercase tracking-wide text-brand-muted print-text-black">Date of Birth</p>
+            <p className="text-lg font-semibold text-brand-secondary print-text-black">
               {new Date(userProfile.dob).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -298,31 +297,31 @@ const NumerologyReportDisplay: React.FC<{
       {/* Core numbers at a glance */}
       <h3 className="text-2xl font-extrabold mb-3 report-title-gradient print:text-slate-900">Core Numbers</h3>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="report-card border-l-indigo-400 rounded-xl p-5">
-          <div className="text-sm text-slate-500">Life Path</div>
+        <div className="report-card glass-effect border-l-indigo-400 rounded-xl p-5 print-bg-white print-border-gray">
+          <div className="text-sm text-brand-muted print-text-black">Life Path</div>
           <div className="mt-1 badge-blue inline-flex px-2 py-0.5 rounded-full font-semibold">{report.life_path_number}</div>
-          <p className="mt-2 text-slate-700">{report.life_path_interpretation}</p>
+          <p className="mt-2 text-brand-muted print-text-black">{report.life_path_interpretation}</p>
         </div>
-        <div className="report-card border-l-emerald-400 rounded-xl p-5">
-          <div className="text-sm text-slate-500">Expression</div>
+        <div className="report-card glass-effect border-l-emerald-400 rounded-xl p-5 print-bg-white print-border-gray">
+          <div className="text-sm text-brand-muted print-text-black">Expression</div>
           <div className="mt-1 badge-emerald inline-flex px-2 py-0.5 rounded-full font-semibold">{report.expression_number}</div>
-          <p className="mt-2 text-slate-700">{report.expression_interpretation}</p>
+          <p className="mt-2 text-brand-muted print-text-black">{report.expression_interpretation}</p>
         </div>
-        <div className="report-card border-l-fuchsia-400 rounded-xl p-5">
-          <div className="text-sm text-slate-500">Soul Urge</div>
+        <div className="report-card glass-effect border-l-fuchsia-400 rounded-xl p-5 print-bg-white print-border-gray">
+          <div className="text-sm text-brand-muted print-text-black">Soul Urge</div>
           <div className="mt-1 badge-blue inline-flex px-2 py-0.5 rounded-full font-semibold">{report.soul_urge_number}</div>
-          <p className="mt-2 text-slate-700">{report.soul_urge_interpretation}</p>
+          <p className="mt-2 text-brand-muted print-text-black">{report.soul_urge_interpretation}</p>
         </div>
       </div>
 
-      {/* Deep dives (long-form, practical) */}
+      {/* Deep dives */}
       <div className="grid grid-cols-1 gap-6 mb-10">
         <DetailSection title="Life Path Deep Dive" n={report.life_path_number as NumberKey} accent="border-l-indigo-400" />
         <DetailSection title="Expression Deep Dive" n={report.expression_number as NumberKey} accent="border-l-emerald-400" />
         <DetailSection title="Soul Urge Deep Dive" n={report.soul_urge_number as NumberKey} accent="border-l-fuchsia-400" />
       </div>
 
-      {/* Optional extended numbers if present */}
+      {/* Extended numbers */}
       {(r.personality_number || r.maturity_number || r.birthday_number) && (
         <>
           <h3 className="text-2xl font-extrabold mb-3 report-title-gradient print:text-slate-900">
@@ -330,31 +329,31 @@ const NumerologyReportDisplay: React.FC<{
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             {r.personality_number && (
-              <div className="report-card border-l-amber-400 rounded-xl p-5">
-                <div className="text-sm text-slate-500">Personality</div>
+              <div className="report-card glass-effect border-l-amber-400 rounded-xl p-5 print-bg-white print-border-gray">
+                <div className="text-sm text-brand-muted print-text-black">Personality</div>
                 <div className="mt-1 badge-blue inline-flex px-2 py-0.5 rounded-full font-semibold">{r.personality_number}</div>
-                {r.personality_interpretation && <p className="mt-2 text-slate-700">{r.personality_interpretation}</p>}
+                {r.personality_interpretation && <p className="mt-2 text-brand-muted print-text-black">{r.personality_interpretation}</p>}
               </div>
             )}
             {r.maturity_number && (
-              <div className="report-card border-l-teal-400 rounded-xl p-5">
-                <div className="text-sm text-slate-500">Maturity</div>
+              <div className="report-card glass-effect border-l-teal-400 rounded-xl p-5 print-bg-white print-border-gray">
+                <div className="text-sm text-brand-muted print-text-black">Maturity</div>
                 <div className="mt-1 badge-emerald inline-flex px-2 py-0.5 rounded-full font-semibold">{r.maturity_number}</div>
-                {r.maturity_interpretation && <p className="mt-2 text-slate-700">{r.maturity_interpretation}</p>}
+                {r.maturity_interpretation && <p className="mt-2 text-brand-muted print-text-black">{r.maturity_interpretation}</p>}
               </div>
             )}
             {r.birthday_number && (
-              <div className="report-card border-l-rose-400 rounded-xl p-5">
-                <div className="text-sm text-slate-500">Birthday</div>
+              <div className="report-card glass-effect border-l-rose-400 rounded-xl p-5 print-bg-white print-border-gray">
+                <div className="text-sm text-brand-muted print-text-black">Birthday</div>
                 <div className="mt-1 badge-blue inline-flex px-2 py-0.5 rounded-full font-semibold">{r.birthday_number}</div>
-                {r.birthday_interpretation && <p className="mt-2 text-slate-700">{r.birthday_interpretation}</p>}
+                {r.birthday_interpretation && <p className="mt-2 text-brand-muted print-text-black">{r.birthday_interpretation}</p>}
               </div>
             )}
           </div>
         </>
       )}
 
-      {/* Personal year forecast if available */}
+      {/* Personal year forecast */}
       {Array.isArray((r as any).personal_years) && (r as any).personal_years.length > 0 && (
         <>
           <h3 className="text-2xl font-extrabold mb-3 report-title-gradient print:text-slate-900">
@@ -363,13 +362,13 @@ const NumerologyReportDisplay: React.FC<{
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {(r as any).personal_years.map(
               (row: { year: number; number: NumberKey; theme?: string }, i: number) => (
-                <div key={i} className="report-card border-l-emerald-400 rounded-xl p-4 print-no-break">
+                <div key={i} className="report-card glass-effect border-l-emerald-400 rounded-xl p-4 print-no-break print-bg-white print-border-gray">
                   <div className="flex items-center gap-2">
                     <span className="badge-year text-xs px-2 py-0.5 rounded">{row.year}</span>
-                    <span className="text-xs text-slate-500">Year Number</span>
+                    <span className="text-xs text-brand-muted print-text-black">Year Number</span>
                     <span className="ml-auto badge-emerald text-xs px-2 py-0.5 rounded">{row.number}</span>
                   </div>
-                  {row.theme && <p className="mt-2 text-slate-700">{row.theme}</p>}
+                  {row.theme && <p className="mt-2 text-brand-muted print-text-black">{row.theme}</p>}
                 </div>
               )
             )}
@@ -379,16 +378,16 @@ const NumerologyReportDisplay: React.FC<{
 
       {/* Summary */}
       {report.summary && (
-        <div className="report-card border-l-indigo-400 rounded-xl p-6 print-no-break">
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Synthesis & Summary</h3>
-          <p className="text-slate-700">{report.summary}</p>
+        <div className="report-card glass-effect border-l-indigo-400 rounded-xl p-6 print-no-break print-bg-white print-border-gray">
+          <h3 className="text-xl font-bold text-brand-secondary mb-2 print-text-black">Synthesis & Summary</h3>
+          <p className="text-brand-muted print-text-black">{report.summary}</p>
         </div>
       )}
 
       {/* Footer signature */}
-      <div className="mt-10 text-center border-t border-slate-200 pt-6 print-no-break">
-        <CosmicSignatureIcon className="h-16 w-16 mx-auto text-slate-400 opacity-70" />
-        <p className="mt-2 text-sm text-slate-500 font-serif italic">Signature of the Universe</p>
+      <div className="mt-10 text-center border-t border-white/30 pt-6 print-no-break print-border-gray">
+        <CosmicSignatureIcon className="h-16 w-16 mx-auto opacity-80" />
+        <p className="mt-2 text-sm text-brand-muted font-serif italic print-text-black">Signature of the Universe</p>
       </div>
     </div>
   );
