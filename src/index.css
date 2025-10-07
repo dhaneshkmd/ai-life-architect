@@ -1,42 +1,58 @@
-/* ===================== REPORT MODE (applies when body has class="report-mode") ===================== */
+/* ===================== REPORT MODE (when body has class="report-mode") ===================== */
 .report-mode {
-  background: #ffffff !important;
+  /* soft light-blue gradient background */
+  background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%) !important;
 }
-.report-mode, .report-mode * {
-  -webkit-print-color-adjust: exact; 
+
+/* make ALL on-screen text white in report mode for max contrast */
+.report-mode, 
+.report-mode * {
+  color: #ffffff !important;
+  -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
-/* kill glass/alpha while exporting */
+/* blue-glass cards on screen (keep some separation from bg) */
 .report-mode .glass-effect,
-.report-mode .input-glass {
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;     /* gray-200 */
-  box-shadow: 0 1px 0 rgba(0,0,0,.04) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+.report-mode .input-glass,
+.report-mode .report-card {
+  background: rgba(255, 255, 255, 0.10) !important;      /* subtle glass */
+  border: 1px solid rgba(255, 255, 255, 0.18) !important; /* soft white border */
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
 }
 
-/* high-contrast text colors for report */
-.report-mode .text-brand-secondary,
-.report-mode .text-brand-muted { color: #0f172a !important; } /* slate-900 */
-.report-mode .text-brand-primary { color: #2563eb !important; } /* blue-600 */
+/* branded text colors remapped to white/cyan hues for visibility */
+.report-mode .text-brand-primary   { color: #e6faff !important; } /* near-white cyan */
+.report-mode .text-brand-secondary { color: #ffffff !important; }
+.report-mode .text-brand-muted     { color: rgba(255,255,255,.85) !important; }
 
-/* helpers for colorful report look */
-.report-title-gradient {
-  background-image: linear-gradient(90deg,#6366F1,#22D3EE); /* indigo->cyan */
+/* headings: brighter + tighter tracking for section clarity */
+.report-mode h1, 
+.report-mode h2, 
+.report-mode h3, 
+.report-mode h4, 
+.report-mode h5, 
+.report-mode h6 {
+  color: #ffffff !important;
+  letter-spacing: 0.2px;
+  font-weight: 700;
+}
+
+/* colorful title accent still visible on blue bg */
+.report-title-gradient{
+  background-image: linear-gradient(90deg,#a5f3fc,#ffffff);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  color: transparent !important;
 }
-.report-card { 
-  background:#fff !important; 
-  border:1px solid #e5e7eb !important; 
-  border-left-width:6px !important;
-}
-.badge-year    { background:#111827; color:#fff; border-radius:.375rem; }
-.badge-blue    { background:#e0e7ff; color:#1e40af; }
-.badge-emerald { background:#d1fae5; color:#065f46; }
+
+/* badges tuned for dark-on-blue theme */
+.badge-year    { background: rgba(0,0,0,.55); color:#fff; border-radius:.375rem; }
+.badge-blue    { background: rgba(59,130,246,.25); color:#fff; }
+.badge-emerald { background: rgba(16,185,129,.25); color:#fff; }
 
 /* layout guards in report mode */
 .report-mode .print-no-break { break-inside: avoid; page-break-inside: avoid; }
@@ -50,12 +66,13 @@
 .report-mode .fixed, 
 .report-mode .sticky { position: static !important; }
 
-/* ===================== PRINT STYLES (when user hits browser print) ===================== */
+/* ===================== PRINT STYLES (browser Print) ===================== */
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   html, body {
-    background: #ffffff !important;
+    background: #ffffff !important;   /* paper white for printers */
+    color: #000000 !important;
     overflow: visible !important;
     height: auto !important;
     width: auto !important;
@@ -70,36 +87,32 @@
   .snap-x, .snap-mandatory { scroll-snap-type: none !important; }
   .container, .mx-auto { max-width: none !important; }
 
-  .glass-effect, .input-glass {
+  /* neutralize glass for crisp print */
+  .glass-effect, .input-glass, .report-card {
     background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
     box-shadow: none !important;
-    border-color: #e5e7eb !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
-  /* readable text & backgrounds */
-  .print-bg-white { background: #ffffff !important; }
+  /* readable print helpers */
+  .print-bg-white   { background: #ffffff !important; }
   .print-text-black { color: #000000 !important; }
-  .print-border-gray { border-color: #e5e7eb !important; }
+  .print-border-gray{ border-color: #e5e7eb !important; }
 
   .fixed, .sticky { position: static !important; }
   a[href]::after { content: "" !important; }
 
-  /* colorful report helpers are also valid in print */
-  .report-card { 
-    background:#fff !important; 
-    border:1px solid #e5e7eb !important; 
-    border-left-width:6px !important;
-  }
-  .badge-year    { background:#111827; color:#fff; }
-  .badge-blue    { background:#e0e7ff; color:#1e40af; }
-  .badge-emerald { background:#d1fae5; color:#065f46; }
+  /* badges for print */
+  .badge-year    { background:#111827 !important; color:#fff !important; }
+  .badge-blue    { background:#e0e7ff !important; color:#1e40af !important; }
+  .badge-emerald { background:#d1fae5 !important; color:#065f46 !important; }
 }
 
 /* Page box */
 @page { margin: 12mm; }
-/* Uncomment one if you want to force orientation
+/* Optional:
 @page { size: A4 portrait; }
 @page { size: A4 landscape; }
 */
